@@ -56,7 +56,7 @@ studyArea = st_bbox(siteSf)
 studyArea
 
 #Let's add 2000 m to each dimension
-studyArea = studyArea + c(-2000, -2000, 2000, 2000)
+studyArea = studyArea + c(-1, -1, 1, 1) #-convert longlat#
 studyArea
 
 #And now we convert it to a spatial sfc object
@@ -117,36 +117,49 @@ Now I'm going to import a raster layer that shows the distribution of forests wi
 
 ```{r}
 # ogsi80 = rast('https://github.com/ValenteJJ/SpatialEcology/blob/main/Week2/ogsi80_utm.tif?raw=true')
-ogsi80 = rast('https://github.com/ValenteJJ/SpatialEcology/raw/main/Week2/ogsi80_utm.tif')
-studyArea = st_transform(studyArea, st_crs(ogsi80))
-ogsi80 = crop(ogsi80, studyArea)
-ogsi80[is.na(ogsi80)] = 0
-plot(ogsi80)
+
+coral = vect("C:/Users/gmluc/OneDrive/Documents/Auburn Spring 2024/Spatial Ecology/Lab 2/Final_UnifiedReefMap_Version2.0/Final_UnifiedReefMap_Version2.0/FWC_UnifiedFloridaReefMap_v2.0.gdb")
+
+studyArea = st_as_sf(studyArea)
+
+studyArea = st_transform(studyArea, crs(coral))
+coral = crop(coral, studyArea)
+# ogsi80[is.na(ogsi80)] = 0
+plot(coral)
 ```
+
+```{r}
+tmp = st_as_sf(coral) %>% 
+  filter(BioCover=='SEAGRASS')
+
+plot(st_geometry(tmp))
+```
+
+
 The white cells show you 30 m pixels where old growth forest has been identified. One of the downsides of working with high-resolution rasters, however, is that you can end up with a TON of cells, and thus a ton of data which can slow down or crash R. It can also take a very long time to render images with lots of cells. Because this is just for visualization purposes (and not for analysis), we are going to re-aggregate this raster at a coarser resolution to make it easier on ourselves.
 
 ```{r}
-ogsi80Coarse = aggregate(ogsi80, fact=5, fun="mean")
+tmpCoarse = aggregate(coral, fact=5, fun="mean")
 
-plot(ogsi80Coarse)
+plot(tmpCoarse)
 ```
 Now we're seeing a new raster where cells have been re-aggregated to a resolution of 150 m. Cells were joined by calculating the average value of the 25 cells that were put together. I'm going to make it binary again by saying that any cell with < 50% old growth is going to be considered NOT old growth, and the others ARE old growth (again, just for display purposes).
 
 ```{r}
-ogsi80Coarse[ogsi80Coarse < 0.5] = 0
-ogsi80Coarse[ogsi80Coarse >= 0.5] = 1
+#tmpCoarse[tmpCoarse < 0.5] = 0
+#tmpCoarse[tmpCoarse >= 0.5] = 1
 
-plot(ogsi80Coarse)
+plot(tmpCoarse)
 ```
 Let's reclassify this raster so that instead of 0 and 1 values, we are identifying the cells as old growth or not old growth forest.
 
 
 ```{r}
-tmp = data.frame('ID' = c(0, 1), 'category' = c(NA, 'Old growth'))
-tmp
-og = categories(ogsi80Coarse, value=tmp)
+#tmp = data.frame('ID' = c(0, 1), 'category' = c(NA, 'Old growth'))
+#tmp
+#og = categories(ogsi80Coarse, value=tmp)
 
-plot(og)
+plot(tmpCoarse)
 ```
 
 
@@ -158,11 +171,12 @@ Now that we have created all of our rasters and shapefiles, we can put it togeth
 #These are in lat/long
 crs(studyAreaElevation, proj=T)
 crs(florida, proj=T)
-
+crs(siteSf, proj=T)
+st_as_sf(coral, proj=T)
 
 #These are in utms
 ##crs(siteSf, proj=T) now in lat/long
-crs(og, proj=T)
+#crs(og, proj=T)
 st_crs(studyArea)$proj4string
 
 ```
@@ -170,7 +184,7 @@ I'm going to reproject everything to UTMs so that we can show a nice scale bar i
 
 ```{r}
 studyAreaElevation = project(studyAreaElevation, crs(siteSf, proj=T))
-oregon = st_transform(oregon, crs(siteSf, proj=T))
+florida = st_transform(florida, crs(siteSf, proj=T))
 ```
 
 Ok, we're ready to go. Let's start simply with our zoomed-out map. Note that ggplot has a built-in geom for plotting sf objects (geom_sf). If you load the tidyterra package, there is a geom_spatraster geom available as well. We'll use both here.
@@ -178,7 +192,7 @@ Ok, we're ready to go. Let's start simply with our zoomed-out map. Note that ggp
 
 ```{r}
 zoomedOut = ggplot()+
-  geom_sf(data = oregon)+
+  geom_sf(data = florida)+
   geom_sf(data = studyArea, fill=NA, color='red')
 
 zoomedOut
@@ -210,7 +224,7 @@ When I add in the old growth forest layer, inserting a new_scale_fill() line is 
 zoomedIn = zoomedIn + 
   new_scale_fill()+
   geom_spatraster(data=og, alpha=0.5)+
-  scale_fill_manual(values=c('Old growth' = 'green'), na.value=NA, name='Old growth', labels='')
+  scale_fill_manual(values=c('SEAGRASS' = 'green'), na.value=NA, name='Seagrass', labels='')
 
 zoomedIn
 ```
