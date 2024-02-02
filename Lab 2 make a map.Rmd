@@ -118,7 +118,9 @@ Now I'm going to import a raster layer that shows the distribution of forests wi
 ```{r}
 # ogsi80 = rast('https://github.com/ValenteJJ/SpatialEcology/blob/main/Week2/ogsi80_utm.tif?raw=true')
 
-coral = vect("C:/Users/gmluc/OneDrive/Documents/Auburn Spring 2024/Spatial Ecology/Lab 2/Final_UnifiedReefMap_Version2.0/Final_UnifiedReefMap_Version2.0/FWC_UnifiedFloridaReefMap_v2.0.gdb")
+# coral = vect("C:/Users/gmluc/OneDrive/Documents/Auburn Spring 2024/Spatial Ecology/Lab 2/Final_UnifiedReefMap_Version2.0/Final_UnifiedReefMap_Version2.0/FWC_UnifiedFloridaReefMap_v2.0.gdb")
+
+coral = vect("C:/Users/jjv0016/OneDrive - Auburn University/Teaching/Spatial Ecology/Lab2/submissions/luchauergretchen/Final_UnifiedReefMap_Version2.0/FWC_UnifiedFloridaReefMap_v2.0.gdb")
 
 studyArea = st_as_sf(studyArea)
 
@@ -324,3 +326,7 @@ plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+# Grade
+
+$\color{red}{\text{You made a good effort here, Gretchen, but the code simply isn't reproducible. Is starts becoming unusable around line 247. So you lost 1 point for lack of reproducibility. You also lost 5 points because you simply did not provide the short paragraph I asked for describing the study area and giving information on the spatial elements you chose. Lastly, when you submit future .rmd files, delete my text and insert your own (as necessary) to describe what you are doing.}}$
